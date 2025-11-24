@@ -49,6 +49,12 @@ class PincodeResource extends Resource
                         $set('district_id', null);
                         $set('zilla_id', null);
                     })
+                    ->afterStateHydrated(function (Set $set, $state, $record) {
+                        // When editing, populate state_id from zilla -> district -> state
+                        if ($record && $record->zilla && $record->zilla->district) {
+                            $set('state_id', $record->zilla->district->state_id);
+                        }
+                    })
                     ->required()
                     ->dehydrated(false), // Virtual field, not saved to DB
                 
@@ -64,6 +70,12 @@ class PincodeResource extends Resource
                     })
                     ->live()
                     ->afterStateUpdated(fn (Set $set) => $set('zilla_id', null))
+                    ->afterStateHydrated(function (Set $set, $state, $record) {
+                        // When editing, populate district_id from zilla -> district
+                        if ($record && $record->zilla) {
+                            $set('district_id', $record->zilla->district_id);
+                        }
+                    })
                     ->required()
                     ->searchable()
                     ->disabled(fn (Get $get) => !$get('state_id'))
