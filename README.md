@@ -1,59 +1,120 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Satlok Ashram Goa - Management Application
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+![Deployment Status](https://github.com/AkashSiwach/satlok-ashram-goa/actions/workflows/laravel.yml/badge.svg)
 
-## About Laravel
+A comprehensive ERP solution for managing the inventory, members (Bhagats), and financial records of Satlok Ashram Goa. Built with **Laravel 11** and **FilamentPHP v3**, deployed on **AWS EC2**.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🚀 Tech Stack
+* **Framework:** Laravel 11
+* **Admin Panel:** FilamentPHP v3
+* **Frontend:** Livewire + TailwindCSS
+* **Database:** MySQL
+* **Server:** AWS EC2 (Ubuntu/Nginx)
+* **CI/CD:** GitHub Actions
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 📂 Modules & Features
 
-## Learning Laravel
+### 1. 📚 Book Inventory System
+Manages the end-to-end lifecycle of books from purchase to sale.
+* **Book Master:** Catalog of all available literature.
+* **Purchase Records:** Invoice management with auto-calculated totals and stock injection.
+* **Stock Balances:** Periodic physical stock verification sessions with user tracking.
+* **Inventory (Live):** Single source of truth for current stock levels.
+* **Counter Sales:** POS system for distributing books (Sales, SMS, Free distribution).
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### 2. 🧘 Bhagat Management (Members)
+Database of ashram members.
+* **Bhagat Profiles:** Name, Namdan logic, contact info.
+* **Geography Logic:** Dynamic address selection (State -> District/Zilla -> Pincode).
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 3. 💰 Finance
+* **Donations:** Tracking financial contributions and generating receipts.
 
-## Laravel Sponsors
+### 4. ⚙️ System Settings
+* **User Management:** Admin access controls.
+* **Geography Master:** Configurable States, Districts, Zillas, and Pincodes.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+## 🛠️ Local Development Setup (How to run this on your laptop)
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+If you have cloned this repository for the first time, follow these steps:
 
-## Contributing
+1.  **Clone the Repo**
+    ```bash
+    git clone [https://github.com/AkashSiwach/satlok-ashram-goa.git](https://github.com/AkashSiwach/satlok-ashram-goa.git)
+    cd satlok-ashram-goa
+    ```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+2.  **Install Dependencies**
+    ```bash
+    composer install
+    npm install && npm run build
+    ```
 
-## Code of Conduct
+3.  **Environment Setup**
+    ```bash
+    cp .env.example .env
+    php artisan key:generate
+    ```
+    *Update your `.env` file with your local database credentials.*
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+4.  **Database Setup**
+    ```bash
+    php artisan migrate --seed
+    ```
 
-## Security Vulnerabilities
+5.  **Filament Optimization (Crucial)**
+    ```bash
+    php artisan filament:optimize
+    ```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+6.  **Run Server**
+    ```bash
+    php artisan serve
+    ```
+    Access the admin panel at: `http://127.0.0.1:8000/admin`
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## 🚀 Deployment (CI/CD)
+
+**DO NOT EDIT FILES DIRECTLY ON THE SERVER.**
+
+This project uses **GitHub Actions** for automated deployment.
+1.  Make changes locally.
+2.  Push to the `main` branch.
+3.  GitHub automatically:
+    * Logs into AWS EC2.
+    * Pulls the code.
+    * Runs Migrations.
+    * Optimizes Filament assets.
+    * Clears caches.
+
+**Deployment Script:** `.github/workflows/laravel.yml`
+
+---
+
+## 📁 Key File Structure
+
+### Book Module
+* **Models:** `app/Models/Book.php`, `Purchase.php`, `StockBalance.php`, `Sale.php`
+* **Resources:** `app/Filament/Resources/BookResource.php` (+ Purchase, Sale, StockBalance)
+
+### Bhagat Module
+* **Model:** `app/Models/Bhagat.php`
+* **Resource:** `app/Filament/Resources/BhagatResource.php`
+
+### Settings Module
+* **Models:** `User.php`, `State.php`, `District.php`, `Zilla.php`
+* **Resources:** Managed in `app/Filament/Resources/`
+
+---
+
+## 🔒 Security Note
+The `.env` file containing database passwords and AWS keys is **excluded** from this repository. If you need access to production credentials, contact the project administrator.
+
+---
+**Maintainer:** Akash Siwach (akash@classicgroup.asia)
