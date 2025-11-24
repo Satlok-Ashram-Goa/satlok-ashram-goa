@@ -29,7 +29,11 @@ jobs:
           # 4. Run Migrations (Database Updates)
           php artisan migrate --force
           
-          # 5. Clear Old Caches
+          # 5. Clear Old Caches (More Aggressive)
+          php artisan cache:clear
+          php artisan config:clear
+          php artisan route:clear
+          php artisan view:clear
           php artisan optimize:clear
           
           # 6. Rebuild Caches
@@ -40,6 +44,9 @@ jobs:
           # 7. Filament Specific Optimization (Crucial for your icons/theme)
           php artisan filament:optimize
           
-          # 8. Fix Permissions (Crucial so Nginx can read the new files)
+          # 8. Clear Filament cache again (force refresh)
+          php artisan filament:cache-components
+          
+          # 9. Fix Permissions (Crucial so Nginx can read the new files)
           sudo chown -R www-data:www-data /var/www/satlok_app
           sudo chmod -R 775 storage bootstrap/cache
