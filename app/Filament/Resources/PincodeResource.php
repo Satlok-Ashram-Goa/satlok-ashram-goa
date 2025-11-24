@@ -49,7 +49,8 @@ class PincodeResource extends Resource
                         $set('district_id', null);
                         $set('zilla_id', null);
                     })
-                    ->required(),
+                    ->required()
+                    ->dehydrated(false), // Virtual field, not saved to DB
                 
                 // --- LEVEL 2: DISTRICT SELECT (Filter) ---
                 Select::make('district_id')
@@ -65,12 +66,13 @@ class PincodeResource extends Resource
                     ->afterStateUpdated(fn (Set $set) => $set('zilla_id', null))
                     ->required()
                     ->searchable()
-                    ->disabled(fn (Get $get) => !$get('state_id')),
+                    ->disabled(fn (Get $get) => !$get('state_id'))
+                    ->dehydrated(false), // Virtual field, not saved to DB
 
                 // --- LEVEL 3: ZILLA SELECT (Saves zilla_id) ---
                 Select::make('zilla_id')
                     ->label('Select Zilla')
-                    ->relationship('zilla', 'name')
+                    // ->relationship('zilla', 'name') // REMOVED: Conflicts with options()
                     ->options(function (Get $get): Collection {
                         $districtId = $get('district_id');
                         if ($districtId) {
