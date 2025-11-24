@@ -1,37 +1,45 @@
-name: Laravel CI
+name: Deploy to EC2
 
 on:
   push:
     branches: [ "main" ]
 
 jobs:
-  build-check:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
+    - name: Run Deployment Commands via SSH
+      uses: appleboy/ssh-action@master
       with:
-        php-version: '8.2'
-        extensions: mbstring, bcmath, intl, gd, zip
-
-    - name: Copy .env
-      run: php -r "file_exists('.env') || copy('.env.example', '.env');"
-
-    - name: Install Dependencies
-      run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
-
-    # --- THIS IS THE FIX ---
-    # We manually create the missing folders before Laravel tries to use them
-    - name: Create Storage Folders
-      run: |
-        mkdir -p storage/framework/cache
-        mkdir -p storage/framework/sessions
-        mkdir -p storage/framework/views
-        mkdir -p storage/logs
-        chmod -R 777 storage bootstrap/cache
-
-    - name: Generate Key
-      run: php artisan key:generate
+        host: ${{ secrets.SSH_HOST }}
+        username: ubuntu
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: 22
+        script: |
+          # 1. Navigate to project
+          cd /var/www/satlok_app
+          
+          # 2. Pull latest code from GitHub
+          git pull origin main
+          
+          # 3. Install/Update PHP Dependencies
+          composer install --no-dev --no-interaction --prefer-dist
+          
+          # 4. Run Migrations (Database Updates)
+          php artisan migrate --force
+          
+          # 5. Clear Old Caches
+          php artisan optimize:clear
+          
+          # 6. Rebuild Caches
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+          
+          # 7. Filament Specific Optimization (Crucial for your icons/theme)
+          php artisan filament:optimize
+          
+          # 8. Fix Permissions (Crucial so Nginx can read the new files)
+          sudo chown -R www-data:www-data /var/www/satlok_app
+          sudo chmod -R 775 storage bootstrap/cache
