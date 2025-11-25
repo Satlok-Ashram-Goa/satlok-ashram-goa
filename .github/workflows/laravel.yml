@@ -20,34 +20,47 @@ jobs:
           # 1. Navigate to project
           cd /var/www/satlok_app
           
-          # 2. Show current commit before update
+          # 2. Fix git ownership issue (allow ubuntu user to access www-data owned repo)
+          git config --global --add safe.directory /var/www/satlok_app
+          
+          # 3. Temporarily change ownership to ubuntu for git operations
+          sudo chown -R ubuntu:ubuntu /var/www/satlok_app
+          
+          # 4. Show current commit before update
           echo "=== BEFORE UPDATE ==="
           git log --oneline -1
           git status
           
-          # 3. FORCE UPDATE: Discard any local changes and match GitHub exactly
+          # 5. FORCE UPDATE: Discard any local changes and match GitHub exactly
           git fetch origin main
           git reset --hard origin/main
           git clean -fd
           
-          # 4. Show current commit after update
+          # 6. Show current commit after update
           echo "=== AFTER UPDATE ==="
           git log --oneline -1
           
-          # 5. Install/Update PHP Dependencies
-          composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
-          
-          # 6. Run Migrations (Database Updates)
-          php artisan migrate --force
-          
-          # 7. NUCLEAR CACHE CLEAR (Force clear everything)
-          php artisan cache:nuclear
-          
-          # 8. Fix Permissions (Crucial so Nginx can read the new files)
+          # 7. Change ownership back to www-data for web server
           sudo chown -R www-data:www-data /var/www/satlok_app
+          
+          # 8. Install/Update PHP Dependencies (as ubuntu with sudo)
+          sudo -u www-data composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+          
+          # 9. Run Migrations (Database Updates)
+          sudo -u www-data php artisan migrate --force
+          
+          # 10. Clear all caches (use standard commands since cache:nuclear might not exist yet)
+          sudo -u www-data php artisan cache:clear
+          sudo -u www-data php artisan config:clear
+          sudo -u www-data php artisan route:clear
+          sudo -u www-data php artisan view:clear
+          sudo -u www-data php artisan optimize:clear
+          sudo -u www-data php artisan filament:optimize
+          
+          # 11. Fix Permissions
           sudo chmod -R 775 storage bootstrap/cache
           
-          # 9. Verify deployment
+          # 12. Verify deployment
           echo "=== DEPLOYMENT COMPLETE ==="
           echo "Current commit: $(git log --oneline -1)"
           echo "Files changed in last commit:"
