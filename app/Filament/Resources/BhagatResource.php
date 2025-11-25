@@ -268,37 +268,70 @@ class BhagatResource extends Resource
                 Section::make('Mantra Dates & Status')
                     ->columns(3) // Ensure 3-column layout
                     ->schema([
-                        // Row 1: First Mantra Date (Only 1 field, takes 1 column)
-                        DatePicker::make('first_mantra_date')->label('First Mantra Date')->columnSpan(1),
+                        // Row 1: First Mantra Date (Always Required)
+                        DatePicker::make('first_mantra_date')
+                            ->label('First Mantra Date')
+                            ->required()
+                            ->columnSpan(1),
 
-                        // Row 2: Attendance Dates (Grouped into 3 columns, will wrap onto two lines in the 3-column section)
+                        // Row 2: Attendance Dates (Conditional based on upload type)
                         Group::make([
-                            DatePicker::make('attendance_date_1')->label('Attendance Date 1')->required(),
-                            DatePicker::make('attendance_date_2')->label('Attendance Date 2')->required(),
-                            DatePicker::make('attendance_date_3')->label('Attendance Date 3')->required(),
-                            DatePicker::make('attendance_date_4')->label('Attendance Date 4')->required(),
-                        ])->columns(3)->columnSpanFull()->label('Required Attendance Dates'),
+                            DatePicker::make('attendance_date_1')
+                                ->label('Attendance Date 1')
+                                ->required(fn (Get $get) => false) // Not required for old data
+                                ->live(),
+                            DatePicker::make('attendance_date_2')
+                                ->label('Attendance Date 2')
+                                ->required(fn (Get $get) => false) // Not required for old data
+                                ->live(),
+                            DatePicker::make('attendance_date_3')
+                                ->label('Attendance Date 3')
+                                ->required(fn (Get $get) => false) // Not required for old data
+                                ->live(),
+                            DatePicker::make('attendance_date_4')
+                                ->label('Attendance Date 4')
+                                ->required(fn (Get $get) => false) // Not required for old data
+                                ->live(),
+                        ])
+                        ->columns(3)
+                        ->columnSpanFull()
+                        ->label('Attendance Dates (Optional for old data)')
+                        ->hidden(fn (Get $get) => !$get('manual_id_entry')), // Hidden for new forms
 
                         // Row 3: Satnaam & Sarnaam Mantra Dates & Status
                         DatePicker::make('satnaam_mantra_date')
                             ->label('Satnaam Mantra Date')
-                            ->required()
-                            ->disabled(fn (Get $get) => !(
-                                $get('attendance_date_1') && 
-                                $get('attendance_date_2') && 
-                                $get('attendance_date_3') && 
-                                $get('attendance_date_4')
-                            ))
-                            ->helperText('Requires 4 attendance dates to be set.')
+                            ->required(fn (Get $get) => false) // Not mandatory
+                            ->disabled(fn (Get $get) => 
+                                !$get('manual_id_entry') || // Disabled for new forms
+                                !(
+                                    $get('attendance_date_1') && 
+                                    $get('attendance_date_2') && 
+                                    $get('attendance_date_3') && 
+                                    $get('attendance_date_4')
+                                )
+                            )
+                            ->helperText(fn (Get $get) => 
+                                !$get('manual_id_entry') 
+                                    ? 'Not available for new forms.' 
+                                    : 'Requires all 4 attendance dates to be set.'
+                            )
                             ->live()
                             ->columnSpan(1),
                         
                         DatePicker::make('sarnaam_mantra_date')
                             ->label('Sarnaam Mantra Date')
-                            ->required()
-                            ->disabled(fn (Get $get) => !$get('satnaam_mantra_date'))
-                            ->helperText('Requires Satnaam Mantra Date to be set.')
-                            ->columnSpan(1), // Takes 1 column
+                            ->required(fn (Get $get) => false) // Not mandatory
+                            ->disabled(fn (Get $get) => 
+                                !$get('manual_id_entry') || // Disabled for new forms
+                                !$get('satnaam_mantra_date')
+                            )
+                            ->helperText(fn (Get $get) => 
+                                !$get('manual_id_entry') 
+                                    ? 'Not available for new forms.' 
+                                    : 'Requires Satnaam Mantra Date to be set.'
+                            )
+                            ->columnSpan(1),
                         
                         // NEW POSITION FOR STATUS (Replaces the Spacer/Placeholder)
                         Select::make('status')
