@@ -20,6 +20,7 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
+use Illuminate\Database\Eloquent\Model;
 
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Builder;
@@ -49,16 +50,18 @@ class PincodeResource extends Resource
                         $set('district_id', null);
                         $set('zilla_id', null);
                     })
-                    ->default(function ($record) {
+                    ->afterStateHydrated(function (Set $set, $state, ?Model $record) {
                         // When editing, populate state_id from zilla -> district -> state
-                        if (!$record) return null;
+                        if (!$record) return;
                         
                         // Explicitly load relationships if needed
                         if (!$record->relationLoaded('zilla')) {
-                            $record->load('zilla.district.state');
+                            $record->load('zilla.district');
                         }
                         
-                        return $record->zilla?->district?->state_id;
+                        if ($record->zilla?->district) {
+                            $set('state_id', $record->zilla->district->state_id);
+                        }
                     })
                     ->required()
                     ->dehydrated(false), // Virtual field, not saved to DB
@@ -75,16 +78,18 @@ class PincodeResource extends Resource
                     })
                     ->live()
                     ->afterStateUpdated(fn (Set $set) => $set('zilla_id', null))
-                    ->default(function ($record) {
+                    ->afterStateHydrated(function (Set $set, $state, ?Model $record) {
                         // When editing, populate district_id from zilla -> district
-                        if (!$record) return null;
+                        if (!$record) return;
                         
                         // Explicitly load relationship if needed
                         if (!$record->relationLoaded('zilla')) {
-                            $record->load('zilla.district');
+                            $record->load('zilla');
                         }
                         
-                        return $record->zilla?->district_id;
+                        if ($record->zilla) {
+                            $set('district_id', $record->zilla->district_id);
+                        }
                     })
                     ->required()
                     ->searchable()

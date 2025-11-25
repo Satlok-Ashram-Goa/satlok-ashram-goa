@@ -18,6 +18,7 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
@@ -42,16 +43,18 @@ class ZillaResource extends Resource
                     ->searchable()
                     ->live()
                     ->afterStateUpdated(fn (Set $set) => $set('district_id', null))
-                    ->default(function ($record) {
+                    ->afterStateHydrated(function (Set $set, $state, ?Model $record) {
                         // When editing, populate state_id from the district relationship
-                        if (!$record) return null;
+                        if (!$record) return;
                         
                         // Explicitly load the relationship if needed
                         if (!$record->relationLoaded('district')) {
-                            $record->load('district.state');
+                            $record->load('district');
                         }
                         
-                        return $record->district?->state_id;
+                        if ($record->district) {
+                            $set('state_id', $record->district->state_id);
+                        }
                     })
                     ->dehydrated(false) // Don't save this field to DB
                     ->required(),
