@@ -71,7 +71,7 @@ class User extends Authenticatable implements FilamentUser // <--- NEW: Implemen
      */
     public function getFilamentName(): string
     {
-        return trim($this->first_name . ' ' . $this->last_name) ?: $this->email;
+        return 'Sat Saheb ' . ($this->first_name ?: $this->email);
     }
     
     /**

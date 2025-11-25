@@ -52,17 +52,6 @@ protected static ?int $navigationSort = 1;
                     ->nullable()
                     ->maxLength(20),
                 
-                // Profile Picture Upload
-                FileUpload::make('profile_picture_path')
-                    ->label('Profile Picture')
-                    ->image()
-                    ->directory('profile-pictures')
-                    ->disk('public')
-                    ->imageEditor()
-                    ->circleCropper()
-                    ->nullable()
-                    ->columnSpanFull(),
-                
                 // CRUCIAL: Password Field Setup for Hashing
                 TextInput::make('password')
                     ->password()

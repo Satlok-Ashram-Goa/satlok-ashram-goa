@@ -17,6 +17,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use App\Filament\Pages\EditProfile;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -27,7 +28,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->profile() // Enable user profile page
+            ->profile(EditProfile::class) // Use custom profile page
             ->brandName('Satlok Ashram Goa')
             ->colors([
                 'primary' => Color::Red,
@@ -37,6 +38,15 @@ class AdminPanelProvider extends PanelProvider
             // Setting maxContentWidth to null removes the default desktop width constraint,
             // allowing pages like Create Bhagat to use the full available space.
             ->maxContentWidth(null)
+            // ------------------------
+            
+            // --- CUSTOM USER MENU ---
+            ->userMenuItems([
+                'profile' => \Filament\Navigation\MenuItem::make()
+                    ->label(fn () => 'Sat Saheb ' . auth()->user()->first_name)
+                    ->url(fn () => url('/admin/profile'))
+                    ->icon('heroicon-o-user-circle'),
+            ])
             // ------------------------
             
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
