@@ -46,6 +46,11 @@ class EditSatnaam extends Page implements HasForms
             && !empty($this->record->attendance_date_3)
             && !empty($this->record->attendance_date_4);
         
+        // Lock if Sarnaam date is set
+        if (!empty($this->record->sarnaam_mantra_date)) {
+            $this->canEditSatnaam = false;
+        }
+        
         $this->form->fill([
             'user_id' => $this->record->user_id,
             'first_name' => $this->record->first_name,
@@ -156,18 +161,28 @@ class EditSatnaam extends Page implements HasForms
 
                 // Satnaam Update Section
                 Section::make('Satnaam Mantra Date')
-                    ->description($this->canEditSatnaam 
-                        ? 'Update Satnaam Mantra Date' 
-                        : 'All 4 attendance dates must be completed before updating Satnaam date')
+                    ->description(function () {
+                        if (!empty($this->record->sarnaam_mantra_date)) {
+                            return '⚠️ Satnaam date is locked (Sarnaam date has been set)';
+                        }
+                        return $this->canEditSatnaam 
+                            ? 'Update Satnaam Mantra Date' 
+                            : 'All 4 attendance dates must be completed before updating Satnaam date';
+                    })
                     ->schema([
                         DatePicker::make('satnaam_mantra_date')
                             ->label('Satnaam Mantra Date')
                             ->native(false)
                             ->displayFormat('d/m/Y')
-                            ->disabled(!$this->canEditSatnaam)
-                            ->helperText($this->canEditSatnaam 
-                                ? 'Once set, attendance dates will be locked' 
-                                : 'Complete all 4 attendance dates first')
+                            ->disabled(!$this->canEditSatnaam || !empty($this->record->sarnaam_mantra_date))
+                            ->helperText(function () {
+                                if (!empty($this->record->sarnaam_mantra_date)) {
+                                    return 'Locked - Sarnaam date has been set';
+                                }
+                                return $this->canEditSatnaam 
+                                    ? 'Once set, attendance dates will be locked' 
+                                    : 'Complete all 4 attendance dates first';
+                            })
                             ->columnSpanFull(),
                     ])
                     ->columns(1),

@@ -39,8 +39,8 @@ class EditAttendance extends Page implements HasForms
         
         $this->record = Bhagat::findOrFail($recordId);
         
-        // Check if Satnaam date is set - if so, lock attendance dates
-        $this->isLocked = !empty($this->record->satnaam_mantra_date);
+        // Check if Satnaam date OR Sarnaam date is set - if so, lock attendance dates
+        $this->isLocked = !empty($this->record->satnaam_mantra_date) || !empty($this->record->sarnaam_mantra_date);
         
         $this->form->fill([
             'user_id' => $this->record->user_id,
@@ -106,7 +106,7 @@ class EditAttendance extends Page implements HasForms
                 // Attendance Update Section
                 Section::make('Attendance Update')
                     ->description($this->isLocked 
-                        ? '⚠️ Attendance dates are locked (Satnaam date has been set)' 
+                        ? '⚠️ Attendance dates are locked (Satnaam or Sarnaam date has been set)' 
                         : 'Update attendance dates (sequential entry)')
                     ->schema([
                         DatePicker::make('first_mantra_date')
