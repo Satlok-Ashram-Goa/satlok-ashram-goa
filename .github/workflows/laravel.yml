@@ -60,7 +60,15 @@ jobs:
           # 11. Fix Permissions
           sudo chmod -R 775 storage bootstrap/cache
           
-          # 12. Verify deployment
+          # 12. CRITICAL: Restart PHP-FPM to load new code
+          echo "=== RESTARTING PHP-FPM ==="
+          sudo systemctl restart php8.3-fpm || sudo systemctl restart php8.2-fpm || sudo systemctl restart php8.1-fpm || sudo systemctl restart php-fpm
+          
+          # 13. Clear OPcache (if enabled)
+          echo "=== CLEARING OPCACHE ==="
+          sudo -u www-data php -r "if(function_exists('opcache_reset')) { opcache_reset(); echo 'OPcache cleared'; } else { echo 'OPcache not enabled'; }"
+          
+          # 14. Verify deployment
           echo "=== DEPLOYMENT COMPLETE ==="
           echo "Current commit: $(git log --oneline -1)"
           echo "Files changed in last commit:"
