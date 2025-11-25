@@ -19,7 +19,8 @@ class Bhagat extends Model
         'same_as_current', 'perm_addr_line_1', 'perm_addr_line_2',
         'perm_state_id', 'perm_district_id', 'perm_zilla_id', 'perm_pincode',
         'photo_path', 'aadhar_front_path', 'aadhar_rear_path',
-        'first_mantra_date', 'satnaam_mantra_date', 'sarnaam_mantra_date',
+        'first_mantra_date', 'attendance_date_1', 'attendance_date_2', 'attendance_date_3', 'attendance_date_4',
+        'satnaam_mantra_date', 'sarnaam_mantra_date',
         'status', 'blacklist_status'
     ];
 

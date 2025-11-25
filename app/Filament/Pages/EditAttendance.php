@@ -27,9 +27,15 @@ class EditAttendance extends Page implements HasForms
     
     public ?array $data = [];
 
-    public function mount(int $record): void
+    public function mount(): void
     {
-        $this->record = Bhagat::findOrFail($record);
+        $recordId = request()->query('record');
+        
+        if (!$recordId) {
+            abort(404, 'Record not found');
+        }
+        
+        $this->record = Bhagat::findOrFail($recordId);
         
         $this->form->fill([
             'user_id' => $this->record->user_id,
@@ -40,8 +46,10 @@ class EditAttendance extends Page implements HasForms
             'mobile_no' => $this->record->mobile_no,
             'whatsapp_no' => $this->record->whatsapp_no,
             'first_mantra_date' => $this->record->first_mantra_date,
-            'satnaam_mantra_date' => $this->record->satnaam_mantra_date,
-            'sarnaam_mantra_date' => $this->record->sarnaam_mantra_date,
+            'attendance_date_1' => $this->record->attendance_date_1,
+            'attendance_date_2' => $this->record->attendance_date_2,
+            'attendance_date_3' => $this->record->attendance_date_3,
+            'attendance_date_4' => $this->record->attendance_date_4,
         ]);
     }
 
@@ -92,29 +100,46 @@ class EditAttendance extends Page implements HasForms
 
                 // Attendance Update Section
                 Section::make('Attendance Update')
-                    ->description('Update mantra attendance dates')
+                    ->description('Update attendance dates (sequential entry)')
                     ->schema([
                         DatePicker::make('first_mantra_date')
                             ->label('First Mantra Date')
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->native(false)
+                            ->displayFormat('d/m/Y')
+                            ->helperText('Read-only - managed in main Bhagat form')
+                            ->columnSpanFull(),
+                            
+                        DatePicker::make('attendance_date_1')
+                            ->label('Attendance Date 1')
                             ->live()
                             ->native(false)
                             ->displayFormat('d/m/Y')
                             ->columnSpanFull(),
                             
-                        DatePicker::make('satnaam_mantra_date')
-                            ->label('Satnaam Mantra Date (Attendance Date 1)')
+                        DatePicker::make('attendance_date_2')
+                            ->label('Attendance Date 2')
                             ->live()
                             ->native(false)
                             ->displayFormat('d/m/Y')
-                            ->hidden(fn (Get $get) => !$get('first_mantra_date'))
+                            ->hidden(fn (Get $get) => !$get('attendance_date_1'))
                             ->columnSpanFull(),
                             
-                        DatePicker::make('sarnaam_mantra_date')
-                            ->label('Sarnaam Mantra Date (Attendance Date 2)')
+                        DatePicker::make('attendance_date_3')
+                            ->label('Attendance Date 3')
                             ->live()
                             ->native(false)
                             ->displayFormat('d/m/Y')
-                            ->hidden(fn (Get $get) => !$get('satnaam_mantra_date'))
+                            ->hidden(fn (Get $get) => !$get('attendance_date_2'))
+                            ->columnSpanFull(),
+                            
+                        DatePicker::make('attendance_date_4')
+                            ->label('Attendance Date 4')
+                            ->live()
+                            ->native(false)
+                            ->displayFormat('d/m/Y')
+                            ->hidden(fn (Get $get) => !$get('attendance_date_3'))
                             ->columnSpanFull(),
                     ])
                     ->columns(1),
@@ -122,14 +147,24 @@ class EditAttendance extends Page implements HasForms
             ->statePath('data');
     }
 
+    public function getBreadcrumbs(): array
+    {
+        return [
+            route('filament.admin.pages.attendance') => 'Attendance',
+            '' => 'Edit',
+        ];
+    }
+
     public function save(): void
     {
         $data = $this->form->getState();
         
+        // Only update attendance dates, not mantra dates
         $this->record->update([
-            'first_mantra_date' => $data['first_mantra_date'] ?? null,
-            'satnaam_mantra_date' => $data['satnaam_mantra_date'] ?? null,
-            'sarnaam_mantra_date' => $data['sarnaam_mantra_date'] ?? null,
+            'attendance_date_1' => $data['attendance_date_1'] ?? null,
+            'attendance_date_2' => $data['attendance_date_2'] ?? null,
+            'attendance_date_3' => $data['attendance_date_3'] ?? null,
+            'attendance_date_4' => $data['attendance_date_4'] ?? null,
         ]);
 
         Notification::make()
