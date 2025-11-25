@@ -20,19 +20,22 @@ jobs:
           # 1. Navigate to project
           cd /var/www/satlok_app
           
-          # 2. Show current commit before pull
-          echo "=== BEFORE PULL ==="
+          # 2. Show current commit before update
+          echo "=== BEFORE UPDATE ==="
           git log --oneline -1
+          git status
           
-          # 3. Pull latest code from GitHub
-          git pull origin main
+          # 3. FORCE UPDATE: Discard any local changes and match GitHub exactly
+          git fetch origin main
+          git reset --hard origin/main
+          git clean -fd
           
-          # 4. Show current commit after pull
-          echo "=== AFTER PULL ==="
+          # 4. Show current commit after update
+          echo "=== AFTER UPDATE ==="
           git log --oneline -1
           
           # 5. Install/Update PHP Dependencies
-          composer install --no-dev --no-interaction --prefer-dist
+          composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
           
           # 6. Run Migrations (Database Updates)
           php artisan migrate --force
@@ -47,3 +50,5 @@ jobs:
           # 9. Verify deployment
           echo "=== DEPLOYMENT COMPLETE ==="
           echo "Current commit: $(git log --oneline -1)"
+          echo "Files changed in last commit:"
+          git show --name-only --oneline HEAD
