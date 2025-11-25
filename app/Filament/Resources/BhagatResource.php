@@ -223,9 +223,41 @@ class BhagatResource extends Resource
                             }),
 
                         // Dependent Display Fields (Auto-Populated by Pincode)
-                        Select::make('current_state_id')->label('State')->relationship('currentState', 'name')->required(),
-                        Select::make('current_district_id')->label('District')->relationship('currentDistrict', 'name')->required(),
-                        Select::make('current_zilla_id')->label('Zilla')->relationship('currentZilla', 'name')->required(),
+                        Select::make('current_state_id')
+                            ->label('State')
+                            ->relationship('currentState', 'name', function (Builder $query, Get $get) {
+                                if ($pincode = $get('current_pincode')) {
+                                    // Workaround: Find districts first, then filter states
+                                    $districtIds = District::whereHas('zillas.pincodes', fn ($q) => $q->where('pincode', $pincode))->pluck('id');
+                                    return $query->whereHas('districts', fn ($q) => $q->whereIn('id', $districtIds));
+                                }
+                                return $query;
+                            })
+                            ->required(),
+                        Select::make('current_district_id')
+                            ->label('District')
+                            ->relationship('currentDistrict', 'name', function (Builder $query, Get $get) {
+                                if ($pincode = $get('current_pincode')) {
+                                    return $query->whereHas('zillas.pincodes', fn ($q) => $q->where('pincode', $pincode));
+                                }
+                                if ($stateId = $get('current_state_id')) {
+                                    return $query->where('state_id', $stateId);
+                                }
+                                return $query;
+                            })
+                            ->required(),
+                        Select::make('current_zilla_id')
+                            ->label('Zilla')
+                            ->relationship('currentZilla', 'name', function (Builder $query, Get $get) {
+                                if ($pincode = $get('current_pincode')) {
+                                    return $query->whereHas('pincodes', fn ($q) => $q->where('pincode', $pincode));
+                                }
+                                if ($districtId = $get('current_district_id')) {
+                                    return $query->where('district_id', $districtId);
+                                }
+                                return $query;
+                            })
+                            ->required(),
 
                     ]), // End of Section 2
 
@@ -273,19 +305,43 @@ class BhagatResource extends Resource
                                 }), 
                             
                             // Dependent Display Fields (Cols 2, 3, 4)
+                            // Dependent Display Fields (Cols 2, 3, 4)
                             Select::make('perm_state_id')
                                 ->label('State')
-                                ->relationship('permState', 'name')
+                                ->relationship('permState', 'name', function (Builder $query, Get $get) {
+                                    if ($pincode = $get('perm_pincode')) {
+                                        // Workaround: Find districts first, then filter states
+                                        $districtIds = District::whereHas('zillas.pincodes', fn ($q) => $q->where('pincode', $pincode))->pluck('id');
+                                        return $query->whereHas('districts', fn ($q) => $q->whereIn('id', $districtIds));
+                                    }
+                                    return $query;
+                                })
                                 ->required(fn (Get $get) => !$get('same_as_current')),
                             
                             Select::make('perm_district_id')
                                 ->label('District')
-                                ->relationship('permDistrict', 'name')
+                                ->relationship('permDistrict', 'name', function (Builder $query, Get $get) {
+                                    if ($pincode = $get('perm_pincode')) {
+                                        return $query->whereHas('zillas.pincodes', fn ($q) => $q->where('pincode', $pincode));
+                                    }
+                                    if ($stateId = $get('perm_state_id')) {
+                                        return $query->where('state_id', $stateId);
+                                    }
+                                    return $query;
+                                })
                                 ->required(fn (Get $get) => !$get('same_as_current')),
                             
                             Select::make('perm_zilla_id')
                                 ->label('Zilla')
-                                ->relationship('permZilla', 'name')
+                                ->relationship('permZilla', 'name', function (Builder $query, Get $get) {
+                                    if ($pincode = $get('perm_pincode')) {
+                                        return $query->whereHas('pincodes', fn ($q) => $q->where('pincode', $pincode));
+                                    }
+                                    if ($districtId = $get('perm_district_id')) {
+                                        return $query->where('district_id', $districtId);
+                                    }
+                                    return $query;
+                                })
                                 ->required(fn (Get $get) => !$get('same_as_current')),
 
                         ])->columns(4) // This Group now contains the 4 address fields using 4 columns
