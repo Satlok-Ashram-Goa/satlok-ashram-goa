@@ -42,11 +42,9 @@ class ZillaResource extends Resource
                     ->searchable()
                     ->live()
                     ->afterStateUpdated(fn (Set $set) => $set('district_id', null))
-                    ->afterStateHydrated(function (Set $set, $state, $record) {
+                    ->default(function ($record) {
                         // When editing, populate state_id from the district relationship
-                        if ($record && $record->district) {
-                            $set('state_id', $record->district->state_id);
-                        }
+                        return $record?->district?->state_id;
                     })
                     ->dehydrated(false) // Don't save this field to DB
                     ->required(),
