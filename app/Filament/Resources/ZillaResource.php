@@ -44,7 +44,14 @@ class ZillaResource extends Resource
                     ->afterStateUpdated(fn (Set $set) => $set('district_id', null))
                     ->default(function ($record) {
                         // When editing, populate state_id from the district relationship
-                        return $record?->district?->state_id;
+                        if (!$record) return null;
+                        
+                        // Explicitly load the relationship if needed
+                        if (!$record->relationLoaded('district')) {
+                            $record->load('district.state');
+                        }
+                        
+                        return $record->district?->state_id;
                     })
                     ->dehydrated(false) // Don't save this field to DB
                     ->required(),

@@ -51,7 +51,14 @@ class PincodeResource extends Resource
                     })
                     ->default(function ($record) {
                         // When editing, populate state_id from zilla -> district -> state
-                        return $record?->zilla?->district?->state_id;
+                        if (!$record) return null;
+                        
+                        // Explicitly load relationships if needed
+                        if (!$record->relationLoaded('zilla')) {
+                            $record->load('zilla.district.state');
+                        }
+                        
+                        return $record->zilla?->district?->state_id;
                     })
                     ->required()
                     ->dehydrated(false), // Virtual field, not saved to DB
@@ -70,7 +77,14 @@ class PincodeResource extends Resource
                     ->afterStateUpdated(fn (Set $set) => $set('zilla_id', null))
                     ->default(function ($record) {
                         // When editing, populate district_id from zilla -> district
-                        return $record?->zilla?->district_id;
+                        if (!$record) return null;
+                        
+                        // Explicitly load relationship if needed
+                        if (!$record->relationLoaded('zilla')) {
+                            $record->load('zilla.district');
+                        }
+                        
+                        return $record->zilla?->district_id;
                     })
                     ->required()
                     ->searchable()
