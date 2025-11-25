@@ -73,6 +73,7 @@ class BhagatResource extends Resource
                                 ->searchable()
                                 ->live() 
                                 ->required()
+                                ->disabled(fn ($record) => $record !== null) // Locked when editing
                                 ->afterStateUpdated(function (Set $set, $state, Get $get) {
                                     $set('current_district_id', null);
                                     $set('current_zilla_id', null);
@@ -156,6 +157,10 @@ class BhagatResource extends Resource
                                 ->directory('aadhar-fronts')
                                 ->disk('public')
                                 ->maxSize(2048)
+                                ->imageResizeMode('cover')
+                                ->imageCropAspectRatio('16:9')
+                                ->imageResizeTargetWidth('1024')
+                                ->imageResizeTargetHeight('576')
                                 ->imagePreviewHeight('350')
                                 ->panelLayout('grid')
                                 ->downloadable()
@@ -169,6 +174,10 @@ class BhagatResource extends Resource
                                 ->directory('aadhar-rears')
                                 ->disk('public')
                                 ->maxSize(2048)
+                                ->imageResizeMode('cover')
+                                ->imageCropAspectRatio('16:9')
+                                ->imageResizeTargetWidth('1024')
+                                ->imageResizeTargetHeight('576')
                                 ->imagePreviewHeight('350')
                                 ->panelLayout('grid')
                                 ->downloadable()
@@ -294,6 +303,10 @@ class BhagatResource extends Resource
                             ->directory('bhagat-photos')
                             ->disk('public')
                             ->maxSize(2048)
+                            ->imageResizeMode('cover')
+                            ->imageCropAspectRatio('1:1')
+                            ->imageResizeTargetWidth('500')
+                            ->imageResizeTargetHeight('500')
                             ->required()
                             ->imagePreviewHeight('350')
                             ->panelLayout('grid')
