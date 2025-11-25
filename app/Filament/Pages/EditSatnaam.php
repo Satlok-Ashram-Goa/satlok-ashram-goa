@@ -6,6 +6,7 @@ use App\Models\Bhagat;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
@@ -13,13 +14,13 @@ use Filament\Forms\Get;
 use Filament\Pages\Page;
 use Filament\Notifications\Notification;
 
-class EditAttendance extends Page implements HasForms
+class EditSatnaam extends Page implements HasForms
 {
     use InteractsWithForms;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     
-    protected static string $view = 'filament.pages.edit-attendance';
+    protected static string $view = 'filament.pages.edit-satnaam';
     
     protected static bool $shouldRegisterNavigation = false; // Hide from sidebar
     
@@ -27,7 +28,7 @@ class EditAttendance extends Page implements HasForms
     
     public ?array $data = [];
     
-    public bool $isLocked = false;
+    public bool $canEditSatnaam = false;
 
     public function mount(): void
     {
@@ -39,8 +40,11 @@ class EditAttendance extends Page implements HasForms
         
         $this->record = Bhagat::findOrFail($recordId);
         
-        // Check if Satnaam date is set - if so, lock attendance dates
-        $this->isLocked = !empty($this->record->satnaam_mantra_date);
+        // Check if all 4 attendance dates are filled
+        $this->canEditSatnaam = !empty($this->record->attendance_date_1) 
+            && !empty($this->record->attendance_date_2)
+            && !empty($this->record->attendance_date_3)
+            && !empty($this->record->attendance_date_4);
         
         $this->form->fill([
             'user_id' => $this->record->user_id,
@@ -55,6 +59,7 @@ class EditAttendance extends Page implements HasForms
             'attendance_date_2' => $this->record->attendance_date_2,
             'attendance_date_3' => $this->record->attendance_date_3,
             'attendance_date_4' => $this->record->attendance_date_4,
+            'satnaam_mantra_date' => $this->record->satnaam_mantra_date,
         ]);
     }
 
@@ -103,11 +108,9 @@ class EditAttendance extends Page implements HasForms
                     ])
                     ->columns(3),
 
-                // Attendance Update Section
-                Section::make('Attendance Update')
-                    ->description($this->isLocked 
-                        ? '⚠️ Attendance dates are locked (Satnaam date has been set)' 
-                        : 'Update attendance dates (sequential entry)')
+                // Attendance Progress Section
+                Section::make('Attendance Progress')
+                    ->description('Attendance dates (read-only)')
                     ->schema([
                         DatePicker::make('first_mantra_date')
                             ->label('First Mantra Date')
@@ -115,50 +118,56 @@ class EditAttendance extends Page implements HasForms
                             ->dehydrated(false)
                             ->native(false)
                             ->displayFormat('d/m/Y')
-                            ->helperText('Read-only - managed in main Bhagat form')
                             ->columnSpanFull(),
                             
                         DatePicker::make('attendance_date_1')
                             ->label('Attendance Date 1')
-                            ->live()
+                            ->disabled()
+                            ->dehydrated(false)
                             ->native(false)
                             ->displayFormat('d/m/Y')
-                            ->disabled($this->isLocked)
-                            ->dehydrated(!$this->isLocked)
-                            ->helperText($this->isLocked ? 'Locked - Satnaam date has been set' : null)
                             ->columnSpanFull(),
                             
                         DatePicker::make('attendance_date_2')
                             ->label('Attendance Date 2')
-                            ->live()
+                            ->disabled()
+                            ->dehydrated(false)
                             ->native(false)
                             ->displayFormat('d/m/Y')
-                            ->hidden(fn (Get $get) => !$get('attendance_date_1'))
-                            ->disabled($this->isLocked)
-                            ->dehydrated(!$this->isLocked)
-                            ->helperText($this->isLocked ? 'Locked - Satnaam date has been set' : null)
                             ->columnSpanFull(),
                             
                         DatePicker::make('attendance_date_3')
                             ->label('Attendance Date 3')
-                            ->live()
+                            ->disabled()
+                            ->dehydrated(false)
                             ->native(false)
                             ->displayFormat('d/m/Y')
-                            ->hidden(fn (Get $get) => !$get('attendance_date_2'))
-                            ->disabled($this->isLocked)
-                            ->dehydrated(!$this->isLocked)
-                            ->helperText($this->isLocked ? 'Locked - Satnaam date has been set' : null)
                             ->columnSpanFull(),
                             
                         DatePicker::make('attendance_date_4')
                             ->label('Attendance Date 4')
-                            ->live()
+                            ->disabled()
+                            ->dehydrated(false)
                             ->native(false)
                             ->displayFormat('d/m/Y')
-                            ->hidden(fn (Get $get) => !$get('attendance_date_3'))
-                            ->disabled($this->isLocked)
-                            ->dehydrated(!$this->isLocked)
-                            ->helperText($this->isLocked ? 'Locked - Satnaam date has been set' : null)
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(1),
+
+                // Satnaam Update Section
+                Section::make('Satnaam Mantra Date')
+                    ->description($this->canEditSatnaam 
+                        ? 'Update Satnaam Mantra Date' 
+                        : 'All 4 attendance dates must be completed before updating Satnaam date')
+                    ->schema([
+                        DatePicker::make('satnaam_mantra_date')
+                            ->label('Satnaam Mantra Date')
+                            ->native(false)
+                            ->displayFormat('d/m/Y')
+                            ->disabled(!$this->canEditSatnaam)
+                            ->helperText($this->canEditSatnaam 
+                                ? 'Once set, attendance dates will be locked' 
+                                : 'Complete all 4 attendance dates first')
                             ->columnSpanFull(),
                     ])
                     ->columns(1),
@@ -169,17 +178,17 @@ class EditAttendance extends Page implements HasForms
     public function getBreadcrumbs(): array
     {
         return [
-            route('filament.admin.pages.attendance') => 'Attendance',
+            route('filament.admin.pages.satnaam-update') => 'Satnaam Update',
             '' => 'Edit',
         ];
     }
 
     public function save(): void
     {
-        if ($this->isLocked) {
+        if (!$this->canEditSatnaam) {
             Notification::make()
-                ->title('Cannot update attendance dates')
-                ->body('Attendance dates are locked because Satnaam date has been set.')
+                ->title('Cannot update Satnaam date')
+                ->body('All 4 attendance dates must be completed first.')
                 ->danger()
                 ->send();
             return;
@@ -187,24 +196,21 @@ class EditAttendance extends Page implements HasForms
 
         $data = $this->form->getState();
         
-        // Only update attendance dates, not mantra dates
         $this->record->update([
-            'attendance_date_1' => $data['attendance_date_1'] ?? null,
-            'attendance_date_2' => $data['attendance_date_2'] ?? null,
-            'attendance_date_3' => $data['attendance_date_3'] ?? null,
-            'attendance_date_4' => $data['attendance_date_4'] ?? null,
+            'satnaam_mantra_date' => $data['satnaam_mantra_date'] ?? null,
         ]);
 
         Notification::make()
-            ->title('Attendance updated successfully')
+            ->title('Satnaam date updated successfully')
+            ->body('Attendance dates are now locked and cannot be modified.')
             ->success()
             ->send();
             
-        $this->redirect(route('filament.admin.pages.attendance'));
+        $this->redirect(route('filament.admin.pages.satnaam-update'));
     }
 
     public function getTitle(): string
     {
-        return 'Edit Attendance - ' . $this->record->user_id;
+        return 'Edit Satnaam - ' . $this->record->user_id;
     }
 }
