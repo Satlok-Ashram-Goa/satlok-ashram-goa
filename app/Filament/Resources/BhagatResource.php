@@ -233,6 +233,8 @@ class BhagatResource extends Resource
                                 }
                                 return $query;
                             })
+                            ->searchable()
+                            ->live()
                             ->required(),
                         Select::make('current_district_id')
                             ->label('District')
@@ -245,6 +247,8 @@ class BhagatResource extends Resource
                                 }
                                 return $query;
                             })
+                            ->searchable()
+                            ->live()
                             ->required(),
                         Select::make('current_zilla_id')
                             ->label('Zilla')
@@ -257,6 +261,8 @@ class BhagatResource extends Resource
                                 }
                                 return $query;
                             })
+                            ->searchable()
+                            ->live()
                             ->required(),
 
                     ]), // End of Section 2
@@ -305,7 +311,6 @@ class BhagatResource extends Resource
                                 }), 
                             
                             // Dependent Display Fields (Cols 2, 3, 4)
-                            // Dependent Display Fields (Cols 2, 3, 4)
                             Select::make('perm_state_id')
                                 ->label('State')
                                 ->relationship('permState', 'name', function (Builder $query, Get $get) {
@@ -316,6 +321,8 @@ class BhagatResource extends Resource
                                     }
                                     return $query;
                                 })
+                                ->searchable()
+                                ->live()
                                 ->required(fn (Get $get) => !$get('same_as_current')),
                             
                             Select::make('perm_district_id')
@@ -329,6 +336,8 @@ class BhagatResource extends Resource
                                     }
                                     return $query;
                                 })
+                                ->searchable()
+                                ->live()
                                 ->required(fn (Get $get) => !$get('same_as_current')),
                             
                             Select::make('perm_zilla_id')
@@ -342,6 +351,8 @@ class BhagatResource extends Resource
                                     }
                                     return $query;
                                 })
+                                ->searchable()
+                                ->live()
                                 ->required(fn (Get $get) => !$get('same_as_current')),
 
                         ])->columns(4) // This Group now contains the 4 address fields using 4 columns
