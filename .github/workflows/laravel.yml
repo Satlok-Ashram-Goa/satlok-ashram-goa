@@ -23,7 +23,12 @@ jobs:
           # 2. Fix git ownership issue (allow ubuntu user to access www-data owned repo)
           git config --global --add safe.directory /var/www/satlok_app
           
-          # 3. Temporarily change ownership to ubuntu for git operations
+          # 3. Switch git remote from HTTPS to SSH (CRITICAL FIX)
+          echo "=== SWITCHING GIT REMOTE TO SSH ==="
+          git remote set-url origin git@github.com:AkashSiwach/satlok-ashram-goa.git
+          git remote -v
+          
+          # 4. Temporarily change ownership to ubuntu for git operations
           sudo chown -R ubuntu:ubuntu /var/www/satlok_app
           
           # 4. Show current commit before update
@@ -62,7 +67,7 @@ jobs:
           
           # 12. CRITICAL: Restart PHP-FPM to load new code
           echo "=== RESTARTING PHP-FPM ==="
-          sudo systemctl restart php8.3-fpm || sudo systemctl restart php8.2-fpm || sudo systemctl restart php8.1-fpm || sudo systemctl restart php-fpm
+          sudo systemctl restart php8.2-fpm || sudo systemctl restart php8.1-fpm || sudo systemctl restart php8.3-fpm || sudo systemctl restart php-fpm
           
           # 13. Clear OPcache (if enabled)
           echo "=== CLEARING OPCACHE ==="
