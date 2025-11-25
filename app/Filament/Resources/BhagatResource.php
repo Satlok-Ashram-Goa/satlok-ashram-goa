@@ -61,6 +61,7 @@ class BhagatResource extends Resource
                             ->onIcon('heroicon-m-document-arrow-up')
                             ->offIcon('heroicon-m-document-plus')
                             ->live()
+                            ->disabled(fn ($record) => $record !== null) // Disable toggle when editing
                             ->columnSpanFull(),
                         
                         // --- ROW 2: PRIMARY ID FIELDS (3 COLUMNS) ---
@@ -108,6 +109,7 @@ class BhagatResource extends Resource
                                     }
                                 })
                                 ->required(fn (Get $get) => $get('manual_id_entry'))
+                                ->readOnly(fn ($record) => $record !== null) // Read-only when editing
                                 ->hidden(fn (Get $get) => !$get('manual_id_entry')), 
                                 
                             // User ID
@@ -115,7 +117,7 @@ class BhagatResource extends Resource
                                 ->label('User ID')
                                 ->required()
                                 ->unique(ignoreRecord: true)
-                                ->readOnly(fn (Get $get) => !$get('manual_id_entry')) 
+                                ->readOnly(fn (Get $get, $record) => $record !== null || !$get('manual_id_entry')) // Always read-only when editing
                                 ->dehydrated(), 
 
                         ])->columns(3)->columnSpanFull(), 
@@ -148,8 +150,33 @@ class BhagatResource extends Resource
                                 ->rules(['digits:12'])
                                 ->columnSpanFull(),
                             
-                            FileUpload::make('aadhar_front_path')->label('Aadhar Front Image')->image()->directory('aadhar-fronts')->disk('public')->maxSize(2048)->columnSpan(1), 
-                            FileUpload::make('aadhar_rear_path')->label('Aadhar Back Image')->image()->directory('aadhar-rears')->disk('public')->maxSize(2048)->columnSpan(1), 
+                            FileUpload::make('aadhar_front_path')
+                                ->label('Aadhar Front Image')
+                                ->image()
+                                ->directory('aadhar-fronts')
+                                ->disk('public')
+                                ->maxSize(2048)
+                                ->imagePreviewHeight('350')
+                                ->panelLayout('grid')
+                                ->downloadable()
+                                ->openable()
+                                ->deletable()
+                                ->reorderable(false)
+                                ->columnSpan(1), 
+                            FileUpload::make('aadhar_rear_path')
+                                ->label('Aadhar Back Image')
+                                ->image()
+                                ->directory('aadhar-rears')
+                                ->disk('public')
+                                ->maxSize(2048)
+                                ->imagePreviewHeight('350')
+                                ->panelLayout('grid')
+                                ->downloadable()
+                                ->openable()
+                                ->deletable()
+                                ->reorderable(false)
+                                ->columnSpan(1),
+ 
                         ])->columnSpanFull()->columns(2) 
                           ->label('Aadhar Details'),
                           
@@ -257,11 +284,24 @@ class BhagatResource extends Resource
                         ->hidden(fn (Get $get) => $get('same_as_current')),
                     ]), // End of Section 3
 
-                // --- NEW SECTION 4 (formerly 5): DOCUMENT UPLOADS ---
-                Section::make('Document Uploads')
+                // --- NEW SECTION 4 (formerly 5): PHOTO UPLOAD ---
+                Section::make('Photo Upload')
                     ->description('Max size 2MB, JPEG/PNG only.')
                     ->schema([
-                        FileUpload::make('photo_path')->label('Photo Upload')->image()->directory('bhagat-photos')->disk('public')->maxSize(2048)->required()->columnSpanFull(),
+                        FileUpload::make('photo_path')
+                            ->label('Photo Upload')
+                            ->image()
+                            ->directory('bhagat-photos')
+                            ->disk('public')
+                            ->maxSize(2048)
+                            ->required()
+                            ->imagePreviewHeight('350')
+                            ->panelLayout('grid')
+                            ->downloadable()
+                            ->openable()
+                            ->deletable()
+                            ->reorderable(false)
+                            ->columnSpanFull(),
                     ])->columns(1),
 
                 // --- NEW SECTION 5 (formerly 4): MANTRA DATES & STATUS (Updated Logic) ---

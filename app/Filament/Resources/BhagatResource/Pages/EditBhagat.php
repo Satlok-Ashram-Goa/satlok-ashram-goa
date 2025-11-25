@@ -16,4 +16,10 @@ class EditBhagat extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+    
+    // Redirect to list page after editing
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
 }

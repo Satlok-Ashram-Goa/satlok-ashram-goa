@@ -23,4 +23,10 @@ class CreateBhagat extends CreateRecord
     {
         return [];
     }
+    
+    // Redirect to list page after creating
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
 }
