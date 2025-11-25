@@ -38,7 +38,7 @@ class ZillaResource extends Resource
             ->schema([
                 // 1. STATE SELECT (Filters the District)
                 Select::make('state_id')
-                    ->label('Select State [DEPLOYMENT TEST - v1]')
+                    ->label('Select State')
                     ->options(State::all()->pluck('name', 'id'))
                     ->searchable()
                     ->live()
