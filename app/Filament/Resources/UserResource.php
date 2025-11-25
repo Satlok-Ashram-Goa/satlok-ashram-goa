@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\DeleteAction;
@@ -50,6 +51,17 @@ protected static ?int $navigationSort = 1;
                     ->tel()
                     ->nullable()
                     ->maxLength(20),
+                
+                // Profile Picture Upload
+                FileUpload::make('profile_picture_path')
+                    ->label('Profile Picture')
+                    ->image()
+                    ->directory('profile-pictures')
+                    ->disk('public')
+                    ->imageEditor()
+                    ->circleCropper()
+                    ->nullable()
+                    ->columnSpanFull(),
                 
                 // CRUCIAL: Password Field Setup for Hashing
                 TextInput::make('password')

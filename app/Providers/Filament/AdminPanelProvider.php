@@ -27,7 +27,8 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->brandname('Satlok Ashram Goa')
+            ->profile() // Enable user profile page
+            ->brandName('Satlok Ashram Goa')
             ->colors([
                 'primary' => Color::Red,
             ])

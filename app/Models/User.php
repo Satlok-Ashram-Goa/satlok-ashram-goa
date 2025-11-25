@@ -24,6 +24,7 @@ class User extends Authenticatable implements FilamentUser // <--- NEW: Implemen
         'last_name',  // <--- NEW: Added from migration
         'email',
         'mobile_no',  // <--- NEW: Added from migration
+        'profile_picture_path', // <--- NEW: Profile picture storage
         'password',
     ];
 
@@ -46,6 +47,7 @@ class User extends Authenticatable implements FilamentUser // <--- NEW: Implemen
     {
         return [
             'email_verified_at' => 'datetime',
+            'last_login_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
@@ -60,6 +62,26 @@ class User extends Authenticatable implements FilamentUser // <--- NEW: Implemen
         // In a real application, you might add logic like:
         // return str_ends_with($this->email, '@satlok.com');
         return true; 
+    }
+    // ------------------------------------------
+    
+    // --- NEW: Filament Profile Display Methods ---
+    /**
+     * Get the user's full name for display in Filament (top right)
+     */
+    public function getFilamentName(): string
+    {
+        return trim($this->first_name . ' ' . $this->last_name) ?: $this->email;
+    }
+    
+    /**
+     * Get the user's profile picture URL for Filament avatar
+     */
+    public function getFilamentAvatarUrl(): ?string
+    {
+        return $this->profile_picture_path 
+            ? asset('storage/' . $this->profile_picture_path)
+            : null;
     }
     // ------------------------------------------
 }
