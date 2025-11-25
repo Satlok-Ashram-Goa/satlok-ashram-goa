@@ -11,7 +11,7 @@ class Bhagat extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'first_name', 'last_name', 'date_of_birth',
+        'user_id', 'id_state_id', 'first_name', 'last_name', 'date_of_birth',
         'guardian_type', 'guardian_name', 'mobile_no', 'whatsapp_no',
         'email_id', 'aadhar_card_no', 
         'current_addr_line_1', 'current_addr_line_2', 
@@ -24,10 +24,15 @@ class Bhagat extends Model
     ];
 
     // --- Relationships ---
+    // ID Generation State (separate from address)
+    public function idState(): BelongsTo { return $this->belongsTo(State::class, 'id_state_id'); }
+    
+    // Current Address Relationships
     public function currentState(): BelongsTo { return $this->belongsTo(State::class, 'current_state_id'); }
     public function currentDistrict(): BelongsTo { return $this->belongsTo(District::class, 'current_district_id'); }
     public function currentZilla(): BelongsTo { return $this->belongsTo(Zilla::class, 'current_zilla_id'); }
     
+    // Permanent Address Relationships
     public function permState(): BelongsTo { return $this->belongsTo(State::class, 'perm_state_id'); }
     public function permDistrict(): BelongsTo { return $this->belongsTo(District::class, 'perm_district_id'); }
     public function permZilla(): BelongsTo { return $this->belongsTo(Zilla::class, 'perm_zilla_id'); }

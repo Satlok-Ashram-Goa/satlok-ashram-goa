@@ -66,18 +66,15 @@ class BhagatResource extends Resource
                         
                         // --- ROW 2: PRIMARY ID FIELDS (3 COLUMNS) ---
                         Group::make([
-                            // State Selection (Must be driven by Pincode in new version)
-                            Select::make('current_state_id')
+                            // State Selection for ID Generation (NOT related to address)
+                            Select::make('id_state_id')
                                 ->label('State')
-                                ->relationship('currentState', 'name')
+                                ->relationship('idState', 'name')
                                 ->searchable()
                                 ->live() 
                                 ->required()
                                 ->disabled(fn ($record) => $record !== null) // Locked when editing
                                 ->afterStateUpdated(function (Set $set, $state, Get $get) {
-                                    $set('current_district_id', null);
-                                    $set('current_zilla_id', null);
-                                    
                                     // ID Generation Logic
                                     if (!$get('manual_id_entry') && $state) {
                                         $stateRecord = State::find($state);
