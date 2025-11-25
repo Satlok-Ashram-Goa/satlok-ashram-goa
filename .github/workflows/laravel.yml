@@ -9,7 +9,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Run Deployment Commands via SSH
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Deploy files and run commands via SSH
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.SSH_HOST }}
@@ -20,46 +23,49 @@ jobs:
           # 1. Navigate to project
           cd /var/www/satlok_app
           
-          # 2. Fix git ownership issue (allow ubuntu user to access www-data owned repo)
-          git config --global --add safe.directory /var/www/satlok_app
+          # 2. Create backup
+          echo "=== CREATING BACKUP ==="
+          sudo cp -r /var/www/satlok_app /var/www/satlok_app_backup_$(date +%Y%m%d_%H%M%S) || true
           
-          # 3. Change ownership to ubuntu for git operations (MUST BE BEFORE GIT COMMANDS)
+          # 3. Change ownership to ubuntu temporarily
           sudo chown -R ubuntu:ubuntu /var/www/satlok_app
+    
+    - name: Copy files to server
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ubuntu
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: 22
+        source: "."
+        target: "/var/www/satlok_app"
+        overwrite: true
+        rm: false
+        
+    - name: Run post-deployment commands
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ubuntu
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: 22
+        script: |
+          cd /var/www/satlok_app
           
-          # 4. Add GitHub to known_hosts (fix "Host key verification failed")
-          echo "=== ADDING GITHUB TO KNOWN HOSTS ==="
-          mkdir -p ~/.ssh
-          ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts 2>/dev/null
+          echo "=== DEPLOYMENT INFO ==="
+          echo "Deployed at: $(date)"
+          ls -la app/Filament/Resources/ZillaResource.php | head -5
           
-          # 5. Switch git remote from HTTPS to SSH (CRITICAL FIX)
-          echo "=== SWITCHING GIT REMOTE TO SSH ==="
-          git remote set-url origin git@github.com:AkashSiwach/satlok-ashram-goa.git
-          git remote -v
-          
-          # 4. Show current commit before update
-          echo "=== BEFORE UPDATE ==="
-          git log --oneline -1
-          git status
-          
-          # 5. FORCE UPDATE: Discard any local changes and match GitHub exactly
-          git fetch origin main
-          git reset --hard origin/main
-          git clean -fd
-          
-          # 6. Show current commit after update
-          echo "=== AFTER UPDATE ==="
-          git log --oneline -1
-          
-          # 7. Change ownership back to www-data for web server
+          # Change ownership to www-data
           sudo chown -R www-data:www-data /var/www/satlok_app
           
-          # 8. Install/Update PHP Dependencies (as ubuntu with sudo)
+          # Install dependencies
           sudo -u www-data composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
           
-          # 9. Run Migrations (Database Updates)
+          # Run migrations
           sudo -u www-data php artisan migrate --force
           
-          # 10. Clear all caches (use standard commands since cache:nuclear might not exist yet)
+          # Clear all caches
           sudo -u www-data php artisan cache:clear
           sudo -u www-data php artisan config:clear
           sudo -u www-data php artisan route:clear
@@ -67,19 +73,14 @@ jobs:
           sudo -u www-data php artisan optimize:clear
           sudo -u www-data php artisan filament:optimize
           
-          # 11. Fix Permissions
+          # Fix permissions
           sudo chmod -R 775 storage bootstrap/cache
           
-          # 12. CRITICAL: Restart PHP-FPM to load new code
+          # Restart PHP-FPM
           echo "=== RESTARTING PHP-FPM ==="
-          sudo systemctl restart php8.2-fpm || sudo systemctl restart php8.1-fpm || sudo systemctl restart php8.3-fpm || sudo systemctl restart php-fpm
+          sudo systemctl restart php8.2-fpm || sudo systemctl restart php8.1-fpm || sudo systemctl restart php-fpm
           
-          # 13. Clear OPcache (if enabled)
-          echo "=== CLEARING OPCACHE ==="
+          # Clear OPcache
           sudo -u www-data php -r "if(function_exists('opcache_reset')) { opcache_reset(); echo 'OPcache cleared'; } else { echo 'OPcache not enabled'; }"
           
-          # 14. Verify deployment
           echo "=== DEPLOYMENT COMPLETE ==="
-          echo "Current commit: $(git log --oneline -1)"
-          echo "Files changed in last commit:"
-          git show --name-only --oneline HEAD
