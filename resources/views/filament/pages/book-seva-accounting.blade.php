@@ -47,7 +47,7 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                        @forelse($this->getTransactions() as $transaction)
+                        @forelse($this->transactions as $transaction)
                             <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
                                 <td class="px-4 py-3 whitespace-nowrap">
                                     {{ \Carbon\Carbon::parse($transaction->txn_date)->format('d/m/Y') }}
@@ -80,7 +80,7 @@
                             </tr>
                         @endforelse
                     </tbody>
-                    @if($this->getTransactions()->count() > 0)
+                    @if($this->transactions->count() > 0)
                         <tfoot class="bg-gray-50 dark:bg-gray-800 font-bold">
                             <tr>
                                 <td colspan="3" class="px-4 py-3 text-right">Total:</td>
