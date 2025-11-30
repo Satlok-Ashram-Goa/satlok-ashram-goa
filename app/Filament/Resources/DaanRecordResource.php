@@ -113,6 +113,15 @@ class DaanRecordResource extends Resource
                         'Completed' => 'success',
                     }),
             ])
+            ->groups([
+                Tables\Grouping\Group::make('sevaMaster.name')
+                    ->label('Type of Seva')
+                    ->collapsible(),
+                Tables\Grouping\Group::make('pledge_date')
+                    ->label('Pledge Date')
+                    ->date()
+                    ->collapsible(),
+            ])
             ->filters([
                 //
             ])

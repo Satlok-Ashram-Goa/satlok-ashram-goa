@@ -16,4 +16,17 @@ class ListDaanRecords extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
+
+    public function getTabs(): array
+    {
+        return [
+            'all' => \Filament\Resources\Components\Tab::make('All'),
+            'new' => \Filament\Resources\Components\Tab::make('New')
+                ->modifyQueryUsing(fn ($query) => $query->where('status', 'Pending')),
+            'in_progress' => \Filament\Resources\Components\Tab::make('In Progress')
+                ->modifyQueryUsing(fn ($query) => $query->where('status', 'In Progress')),
+            'completed' => \Filament\Resources\Components\Tab::make('Completed')
+                ->modifyQueryUsing(fn ($query) => $query->where('status', 'Completed')),
+        ];
+    }
 }
