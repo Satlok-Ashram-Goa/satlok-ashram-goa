@@ -99,8 +99,8 @@ class BookSevaAccounting extends Page implements HasForms
     {
         // Get Counter Sales
         $sales = \DB::table('sales')
-            ->when($this->fromDate, fn ($q) => $q->where('txn_date', '>=', $this->fromDate))
-            ->when($this->toDate, fn ($q) => $q->where('txn_date', '<=', $this->toDate))
+            ->when($this->fromDate, fn ($q) => $q->whereRaw("DATE(txn_date) >= ?", [$this->fromDate]))
+            ->when($this->toDate, fn ($q) => $q->whereRaw("DATE(txn_date) <= ?", [$this->toDate]))
             ->select([
                 'id',
                 'txn_date',
@@ -113,8 +113,8 @@ class BookSevaAccounting extends Page implements HasForms
 
         // Get Book Sevas
         $bookSevas = \DB::table('book_sevas')
-            ->when($this->fromDate, fn ($q) => $q->where('txn_date', '>=', $this->fromDate))
-            ->when($this->toDate, fn ($q) => $q->where('txn_date', '<=', $this->toDate))
+            ->when($this->fromDate, fn ($q) => $q->whereRaw("DATE(txn_date) >= ?", [$this->fromDate]))
+            ->when($this->toDate, fn ($q) => $q->whereRaw("DATE(txn_date) <= ?", [$this->toDate]))
             ->select([
                 'id',
                 'txn_date',

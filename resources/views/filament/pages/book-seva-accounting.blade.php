@@ -22,6 +22,11 @@
 
             <form class="space-y-6">
                 {{ $this->form }}
+                
+                {{-- Debug Info --}}
+                <div class="text-xs text-gray-500 font-mono">
+                    Debug: From [{{ $this->fromDate }}] To [{{ $this->toDate }}]
+                </div>
             </form>
         </x-filament::section>
 
