@@ -114,11 +114,11 @@ class BookSevaResource extends Resource
                                     ->default(1)
                                     ->required()
                                     ->minValue(1)
-                                    ->live()
-                                    ->debounce('500ms')
+                                    ->live(onBlur: true) // Update on blur to prevent partial updates
                                     ->afterStateUpdated(function ($state, Set $set, Get $get) {
                                         $amount = (int)$state * (float)$get('price');
                                         $set('amount', $amount);
+                                        self::calculateGrandTotals($get, $set);
                                     })
                                     ->columnSpan(2),
 
@@ -131,6 +131,7 @@ class BookSevaResource extends Resource
                                     ->afterStateUpdated(function ($state, Set $set, Get $get) {
                                         $amount = (int)$get('quantity') * (float)$state;
                                         $set('amount', $amount);
+                                        self::calculateGrandTotals($get, $set);
                                     })
                                     ->columnSpan(2),
 
@@ -139,15 +140,10 @@ class BookSevaResource extends Resource
                                     ->numeric()
                                     ->readOnly()
                                     ->dehydrated()
-                                    ->live()
-                                    ->afterStateUpdated(function (Get $get, Set $set) {
-                                        self::calculateGrandTotals($get, $set);
-                                    })
                                     ->columnSpan(2),
                             ])
                             ->columns(10)
                             ->live()
-                            ->afterStateUpdated(fn (Get $get, Set $set) => self::calculateGrandTotals($get, $set))
                             ->deleteAction(
                                 fn ($action) => $action->after(fn(Get $get, Set $set) => self::calculateGrandTotals($get, $set))
                             ),
