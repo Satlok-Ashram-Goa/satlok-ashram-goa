@@ -120,7 +120,7 @@ class BookSevaAccounting extends Page implements HasForms, HasTable
             ->poll('30s');
     }
 
-    protected function getTransactionsQuery(): Builder
+    protected function getTransactionsQuery(): \Illuminate\Database\Query\Builder
     {
         // Get Counter Sales
         $sales = \DB::table('sales')
