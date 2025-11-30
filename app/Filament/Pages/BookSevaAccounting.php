@@ -79,7 +79,7 @@ class BookSevaAccounting extends Page implements HasForms, HasTable
     public function table(Table $table): Table
     {
         return $table
-            ->query($this->getTransactionsQuery())
+            ->query(Sale::query()->whereRaw('1 = 0')) // Dummy query, we'll use records instead
             ->columns([
                 TextColumn::make('txn_date')
                     ->label('Date')
@@ -115,12 +115,16 @@ class BookSevaAccounting extends Page implements HasForms, HasTable
                             ->label('Total'),
                     ]),
             ])
-            ->defaultSort('txn_date', 'desc')
             ->paginated([10, 25, 50, 100])
-            ->poll('30s');
+            ->defaultSort('txn_date', 'desc');
+    }
+    
+    public function getTableRecords(): Collection
+    {
+        return $this->getTransactionsData();
     }
 
-    protected function getTransactionsQuery(): \Illuminate\Database\Query\Builder
+    protected function getTransactionsData(): Collection
     {
         // Get Counter Sales
         $sales = \DB::table('sales')
@@ -133,7 +137,8 @@ class BookSevaAccounting extends Page implements HasForms, HasTable
                 \DB::raw("'Counter Sale' as donation_type"),
                 'total_qty',
                 'total_amount',
-            ]);
+            ])
+            ->get();
 
         // Get Book Sevas
         $bookSevas = \DB::table('book_sevas')
@@ -146,21 +151,16 @@ class BookSevaAccounting extends Page implements HasForms, HasTable
                 \DB::raw("'Book Seva' as donation_type"),
                 'total_qty',
                 'total_amount',
-            ]);
+            ])
+            ->get();
 
-        // Union both queries and wrap in a subquery
-        $union = $sales->union($bookSevas);
-        
-        // Return as a query builder from subquery to avoid ORDER BY conflicts
-        return \DB::table(\DB::raw("({$union->toSql()}) as transactions"))
-            ->mergeBindings($union);
+        // Merge and sort
+        return $sales->merge($bookSevas)->sortByDesc('txn_date')->values();
     }
 
     public function downloadPdf(): \Symfony\Component\HttpFoundation\Response
     {
-        $transactions = $this->getTransactionsQuery()
-            ->orderBy('txn_date', 'desc')
-            ->get();
+        $transactions = $this->getTransactionsData();
             
         $totalAmount = $transactions->sum('total_amount');
         $totalQty = $transactions->sum('total_qty');
