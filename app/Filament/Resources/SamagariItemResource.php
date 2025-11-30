@@ -25,29 +25,38 @@ class SamagariItemResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('sku_id')
-                    ->label('SKU ID')
-                    ->required()
-                    ->unique(ignoreRecord: true)
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('name')
-                    ->label('Item Name')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\FileUpload::make('image')
-                    ->label('Item Image')
-                    ->image()
-                    ->directory('samagari-items')
-                    ->columnSpanFull(),
-                Forms\Components\TextInput::make('price')
-                    ->label('Sale Price')
-                    ->required()
-                    ->numeric()
-                    ->prefix('₹'),
-                Forms\Components\Toggle::make('is_active')
-                    ->label('Allow for sale')
-                    ->required()
-                    ->default(true),
+                Forms\Components\Grid::make(3)
+                    ->schema([
+                        Forms\Components\TextInput::make('sku_id')
+                            ->label('SKU ID')
+                            ->default(function () {
+                                $nextId = SamagariItem::max('id') + 1;
+                                return 'SA-GOA-' . (1000 + $nextId);
+                            })
+                            ->readOnly()
+                            ->dehydrated()
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('name')
+                            ->label('Item Name')
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('price')
+                            ->label('Sale Price')
+                            ->required()
+                            ->numeric()
+                            ->prefix('₹'),
+                        Forms\Components\FileUpload::make('image')
+                            ->label('Item Image')
+                            ->image()
+                            ->directory('samagari-items')
+                            ->columnSpanFull(),
+                        Forms\Components\Toggle::make('is_active')
+                            ->label('Allow for sale')
+                            ->required()
+                            ->default(true)
+                            ->columnSpanFull(),
+                    ]),
             ]);
     }
 
