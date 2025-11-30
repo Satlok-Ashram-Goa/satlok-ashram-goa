@@ -108,7 +108,7 @@ class DaanRecordResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'Pending' => 'gray',
+                        'Pending' => 'danger',
                         'In Progress' => 'warning',
                         'Completed' => 'success',
                     }),
