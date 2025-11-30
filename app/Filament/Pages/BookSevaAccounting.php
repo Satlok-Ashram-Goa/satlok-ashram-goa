@@ -54,7 +54,10 @@ class BookSevaAccounting extends Page implements HasForms
                     ->displayFormat('d/m/Y')
                     ->required()
                     ->live()
-                    ->afterStateUpdated(fn ($state) => $this->fromDate = $state),
+                    ->afterStateUpdated(function ($state) {
+                        $this->fromDate = $state;
+                        \Log::info('From Date Updated:', ['fromDate' => $this->fromDate, 'state' => $state]);
+                    }),
                     
                 DatePicker::make('to_date')
                     ->label('To Date')
@@ -62,7 +65,10 @@ class BookSevaAccounting extends Page implements HasForms
                     ->displayFormat('d/m/Y')
                     ->required()
                     ->live()
-                    ->afterStateUpdated(fn ($state) => $this->toDate = $state),
+                    ->afterStateUpdated(function ($state) {
+                        $this->toDate = $state;
+                        \Log::info('To Date Updated:', ['toDate' => $this->toDate, 'state' => $state]);
+                    }),
             ])
             ->columns(2)
             ->statePath('data');
@@ -85,6 +91,11 @@ class BookSevaAccounting extends Page implements HasForms
 
     protected function getTransactionsData(): Collection
     {
+        \Log::info('Getting Transactions Data:', [
+            'fromDate' => $this->fromDate,
+            'toDate' => $this->toDate
+        ]);
+
         // Get Counter Sales
         $sales = \DB::table('sales')
             ->when($this->fromDate && $this->toDate, fn ($q) => $q->whereBetween('txn_date', [
@@ -116,6 +127,11 @@ class BookSevaAccounting extends Page implements HasForms
                 'total_amount',
             ])
             ->get();
+
+        \Log::info('Query Results:', [
+            'sales_count' => $sales->count(),
+            'book_sevas_count' => $bookSevas->count()
+        ]);
 
         // Merge and sort
         return $sales->merge($bookSevas)->sortByDesc('txn_date')->values();
