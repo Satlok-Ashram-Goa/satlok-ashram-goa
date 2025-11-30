@@ -25,7 +25,7 @@ class DonationResource extends Resource
 {
     protected static ?string $model = Donation::class;
 
-    protected static ?string $navigationGroup = 'Finance & Donations';
+    protected static ?string $navigationGroup = 'Accounts & Finance';
     protected static ?string $navigationLabel = 'Donation Receipts';
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
     protected static ?int $navigationSort = 1;
