@@ -139,6 +139,10 @@ class BookSevaResource extends Resource
                                     ->numeric()
                                     ->readOnly()
                                     ->dehydrated()
+                                    ->live()
+                                    ->afterStateUpdated(function (Get $get, Set $set) {
+                                        self::calculateGrandTotals($get, $set);
+                                    })
                                     ->columnSpan(2),
                             ])
                             ->columns(10)
