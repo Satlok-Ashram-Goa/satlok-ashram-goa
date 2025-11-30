@@ -52,22 +52,24 @@ class BookSevaAccounting extends Page implements HasForms
                     ->label('From Date')
                     ->native(false)
                     ->displayFormat('d/m/Y')
-                    ->format('Y-m-d') // Ensure state is stored as Y-m-d
+                    ->format('Y-m-d')
                     ->required()
                     ->live(onBlur: true)
                     ->afterStateUpdated(function ($state) {
-                        $this->fromDate = $state;
+                        // Strip time component, ensure Y-m-d
+                        $this->fromDate = \Carbon\Carbon::parse($state)->startOfDay()->format('Y-m-d');
                     }),
                     
                 DatePicker::make('to_date')
                     ->label('To Date')
                     ->native(false)
                     ->displayFormat('d/m/Y')
-                    ->format('Y-m-d') // Ensure state is stored as Y-m-d
+                    ->format('Y-m-d')
                     ->required()
                     ->live(onBlur: true)
                     ->afterStateUpdated(function ($state) {
-                        $this->toDate = $state;
+                        // Strip time component, ensure Y-m-d
+                        $this->toDate = \Carbon\Carbon::parse($state)->endOfDay()->format('Y-m-d');
                     }),
             ])
             ->columns(2)
