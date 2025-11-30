@@ -120,6 +120,11 @@ class SaleResource extends Resource
                                     ->numeric()
                                     ->readOnly()
                                     ->dehydrated()
+                                    ->live()
+                                    ->afterStateUpdated(function ($state, Set $set, Get $get) {
+                                        $lineTotal = (int)$get('quantity') * (float)$state;
+                                        $set('line_total', $lineTotal);
+                                    })
                                     ->columnSpan(1),
 
                                 // 5. LINE TOTAL
@@ -128,6 +133,10 @@ class SaleResource extends Resource
                                     ->numeric()
                                     ->readOnly()
                                     ->dehydrated()
+                                    ->live()
+                                    ->afterStateUpdated(function (Get $get, Set $set) {
+                                        self::calculateGrandTotals($get, $set);
+                                    })
                                     ->columnSpan(1),
 
                             ])->columns(8)
