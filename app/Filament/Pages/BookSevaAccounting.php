@@ -5,24 +5,16 @@ namespace App\Filament\Pages;
 use App\Models\BookSeva;
 use App\Models\Sale;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Actions\Action as FormAction;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
-use Filament\Forms\Get;
 use Filament\Pages\Page;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Concerns\InteractsWithTable;
-use Filament\Tables\Contracts\HasTable;
-use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Barryvdh\DomPDF\Facade\Pdf;
 
-class BookSevaAccounting extends Page implements HasForms, HasTable
+class BookSevaAccounting extends Page implements HasForms
 {
     use InteractsWithForms;
-    use InteractsWithTable;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-chart-bar';
     
@@ -76,53 +68,19 @@ class BookSevaAccounting extends Page implements HasForms, HasTable
             ->statePath('data');
     }
 
-    public function table(Table $table): Table
+    public function getTransactions()
     {
-        return $table
-            ->query(Sale::query()->whereRaw('1 = 0')) // Dummy query, we'll use records instead
-            ->columns([
-                TextColumn::make('txn_date')
-                    ->label('Date')
-                    ->date('d/m/Y')
-                    ->sortable(),
-                    
-                TextColumn::make('txn_id')
-                    ->label('Txn No')
-                    ->searchable()
-                    ->sortable(),
-                    
-                TextColumn::make('donation_type')
-                    ->label('Donation Type')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'Counter Sale' => 'success',
-                        'Book Seva' => 'info',
-                        default => 'gray',
-                    }),
-                    
-                TextColumn::make('total_qty')
-                    ->label('Total Qty')
-                    ->numeric()
-                    ->alignEnd(),
-                    
-                TextColumn::make('total_amount')
-                    ->label('Total Amount')
-                    ->money('INR')
-                    ->alignEnd()
-                    ->summarize([
-                        \Filament\Tables\Columns\Summarizers\Sum::make()
-                            ->money('INR')
-                            ->label('Total'),
-                    ]),
-            ])
-            ->paginated([10, 25, 50, 100])
-            ->defaultSort('txn_date', 'desc');
+        return $this->getTransactionsData();
     }
-    
-    public function getTableRecords(): \Illuminate\Database\Eloquent\Collection
+
+    public function getTotalAmount()
     {
-        // Convert to Eloquent Collection for Filament compatibility
-        return new \Illuminate\Database\Eloquent\Collection($this->getTransactionsData());
+        return $this->getTransactions()->sum('total_amount');
+    }
+
+    public function getTotalQty()
+    {
+        return $this->getTransactions()->sum('total_qty');
     }
 
     protected function getTransactionsData(): Collection
