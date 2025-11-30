@@ -48,9 +48,15 @@ class DaanRecordResource extends Resource
                             ->schema([
                                 Forms\Components\Select::make('bhagat_id')
                                     ->label('Bhagat ID')
-                                    ->relationship('bhagat', 'id') // Search by ID
-                                    ->getOptionLabelFromRecordUsing(fn (Model $record) => "{$record->id} - {$record->first_name} {$record->last_name}")
-                                    ->searchable(['id', 'first_name', 'last_name', 'mobile_no'])
+                                    ->searchable()
+                                    ->getSearchResultsUsing(fn (string $search) => \App\Models\Bhagat::where('user_id', 'like', "%{$search}%")
+                                        ->orWhere('first_name', 'like', "%{$search}%")
+                                        ->orWhere('last_name', 'like', "%{$search}%")
+                                        ->orWhere('mobile_no', 'like', "%{$search}%")
+                                        ->limit(50)
+                                        ->get()
+                                        ->mapWithKeys(fn ($bhagat) => [$bhagat->id => "{$bhagat->user_id} - {$bhagat->first_name} {$bhagat->last_name}"]))
+                                    ->getOptionLabelUsing(fn ($value): ?string => \App\Models\Bhagat::find($value)?->user_id . ' - ' . \App\Models\Bhagat::find($value)?->first_name . ' ' . \App\Models\Bhagat::find($value)?->last_name)
                                     ->required()
                                     ->reactive()
                                     ->afterStateUpdated(fn ($state, Forms\Set $set) => $set('bhagat_name', \App\Models\Bhagat::find($state)?->first_name . ' ' . \App\Models\Bhagat::find($state)?->last_name)),
@@ -89,7 +95,7 @@ class DaanRecordResource extends Resource
                 Tables\Columns\TextColumn::make('pledge_date')
                     ->date()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('bhagat.id')
+                Tables\Columns\TextColumn::make('bhagat.user_id')
                     ->label('Bhagat ID')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('bhagat.first_name')
