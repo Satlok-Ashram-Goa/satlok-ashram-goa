@@ -88,8 +88,8 @@ class BookSevaAccounting extends Page implements HasForms
         // Get Counter Sales
         $sales = \DB::table('sales')
             ->when($this->fromDate && $this->toDate, fn ($q) => $q->whereBetween('txn_date', [
-                $this->fromDate . ' 00:00:00',
-                $this->toDate . ' 23:59:59'
+                $this->fromDate,
+                $this->toDate
             ]))
             ->select([
                 'id',
@@ -104,8 +104,8 @@ class BookSevaAccounting extends Page implements HasForms
         // Get Book Sevas
         $bookSevas = \DB::table('book_sevas')
             ->when($this->fromDate && $this->toDate, fn ($q) => $q->whereBetween('txn_date', [
-                $this->fromDate . ' 00:00:00',
-                $this->toDate . ' 23:59:59'
+                $this->fromDate,
+                $this->toDate
             ]))
             ->select([
                 'id',
