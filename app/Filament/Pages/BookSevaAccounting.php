@@ -123,7 +123,7 @@ class BookSevaAccounting extends Page implements HasForms, HasTable
     protected function getTransactionsQuery(): Builder
     {
         // Get Counter Sales
-        $sales = Sale::query()
+        $sales = \DB::table('sales')
             ->when($this->fromDate, fn ($q) => $q->whereDate('txn_date', '>=', $this->fromDate))
             ->when($this->toDate, fn ($q) => $q->whereDate('txn_date', '<=', $this->toDate))
             ->select([
@@ -136,7 +136,7 @@ class BookSevaAccounting extends Page implements HasForms, HasTable
             ]);
 
         // Get Book Sevas
-        $bookSevas = BookSeva::query()
+        $bookSevas = \DB::table('book_sevas')
             ->when($this->fromDate, fn ($q) => $q->whereDate('txn_date', '>=', $this->fromDate))
             ->when($this->toDate, fn ($q) => $q->whereDate('txn_date', '<=', $this->toDate))
             ->select([
@@ -148,13 +148,20 @@ class BookSevaAccounting extends Page implements HasForms, HasTable
                 'total_amount',
             ]);
 
-        // Union both queries
-        return $sales->union($bookSevas);
+        // Union both queries and wrap in a subquery
+        $union = $sales->union($bookSevas);
+        
+        // Return as a query builder from subquery to avoid ORDER BY conflicts
+        return \DB::table(\DB::raw("({$union->toSql()}) as transactions"))
+            ->mergeBindings($union);
     }
 
     public function downloadPdf(): \Symfony\Component\HttpFoundation\Response
     {
-        $transactions = $this->getTransactionsQuery()->get();
+        $transactions = $this->getTransactionsQuery()
+            ->orderBy('txn_date', 'desc')
+            ->get();
+            
         $totalAmount = $transactions->sum('total_amount');
         $totalQty = $transactions->sum('total_qty');
 
