@@ -119,9 +119,10 @@ class BookSevaAccounting extends Page implements HasForms, HasTable
             ->defaultSort('txn_date', 'desc');
     }
     
-    public function getTableRecords(): Collection
+    public function getTableRecords(): \Illuminate\Database\Eloquent\Collection
     {
-        return $this->getTransactionsData();
+        // Convert to Eloquent Collection for Filament compatibility
+        return new \Illuminate\Database\Eloquent\Collection($this->getTransactionsData());
     }
 
     protected function getTransactionsData(): Collection
