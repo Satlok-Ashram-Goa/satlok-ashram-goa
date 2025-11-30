@@ -117,7 +117,8 @@ class BookSevaResource extends Resource
                                     ->live()
                                     ->debounce('500ms')
                                     ->afterStateUpdated(function ($state, Set $set, Get $get) {
-                                        $set('amount', (int)$state * (float)$get('price'));
+                                        $amount = (int)$state * (float)$get('price');
+                                        $set('amount', $amount);
                                     })
                                     ->columnSpan(2),
 
@@ -126,6 +127,11 @@ class BookSevaResource extends Resource
                                     ->numeric()
                                     ->readOnly()
                                     ->dehydrated()
+                                    ->live()
+                                    ->afterStateUpdated(function ($state, Set $set, Get $get) {
+                                        $amount = (int)$get('quantity') * (float)$state;
+                                        $set('amount', $amount);
+                                    })
                                     ->columnSpan(2),
 
                                 TextInput::make('amount')
