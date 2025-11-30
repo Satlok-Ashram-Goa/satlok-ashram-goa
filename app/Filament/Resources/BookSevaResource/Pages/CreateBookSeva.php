@@ -16,6 +16,8 @@ class CreateBookSeva extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
+        \Log::info('CreateBookSeva Data:', $data);
+
         $totalQty = 0;
         $totalAmount = 0;
 
