@@ -52,6 +52,7 @@ class BookSevaAccounting extends Page implements HasForms
                     ->label('From Date')
                     ->native(false)
                     ->displayFormat('d/m/Y')
+                    ->format('Y-m-d') // Ensure state is stored as Y-m-d
                     ->required()
                     ->live(onBlur: true)
                     ->afterStateUpdated(function ($state) {
@@ -62,6 +63,7 @@ class BookSevaAccounting extends Page implements HasForms
                     ->label('To Date')
                     ->native(false)
                     ->displayFormat('d/m/Y')
+                    ->format('Y-m-d') // Ensure state is stored as Y-m-d
                     ->required()
                     ->live(onBlur: true)
                     ->afterStateUpdated(function ($state) {
@@ -97,10 +99,8 @@ class BookSevaAccounting extends Page implements HasForms
     {
         // Get Counter Sales
         $sales = \DB::table('sales')
-            ->when($this->fromDate && $this->toDate, fn ($q) => $q->whereBetween('txn_date', [
-                $this->fromDate,
-                $this->toDate
-            ]))
+            ->when($this->fromDate, fn ($q) => $q->where('txn_date', '>=', $this->fromDate))
+            ->when($this->toDate, fn ($q) => $q->where('txn_date', '<=', $this->toDate))
             ->select([
                 'id',
                 'txn_date',
@@ -113,10 +113,8 @@ class BookSevaAccounting extends Page implements HasForms
 
         // Get Book Sevas
         $bookSevas = \DB::table('book_sevas')
-            ->when($this->fromDate && $this->toDate, fn ($q) => $q->whereBetween('txn_date', [
-                $this->fromDate,
-                $this->toDate
-            ]))
+            ->when($this->fromDate, fn ($q) => $q->where('txn_date', '>=', $this->fromDate))
+            ->when($this->toDate, fn ($q) => $q->where('txn_date', '<=', $this->toDate))
             ->select([
                 'id',
                 'txn_date',
