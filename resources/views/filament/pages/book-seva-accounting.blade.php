@@ -56,7 +56,7 @@
                                     {{ $transaction->txn_id }}
                                 </td>
                                 <td class="px-4 py-3 text-center">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium
                                         {{ $transaction->donation_type === 'Counter Sale' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' }}">
                                         {{ $transaction->donation_type }}
                                     </span>
