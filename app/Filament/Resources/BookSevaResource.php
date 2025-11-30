@@ -179,6 +179,8 @@ class BookSevaResource extends Resource
         $price = $book->price;
         $set('price', $price);
         $set('amount', $qty * $price);
+        
+        self::calculateGrandTotals($get, $set);
     }
 
     public static function calculateGrandTotals(Get $get, Set $set)
