@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Providers;
+
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Support\Facades\Event;
