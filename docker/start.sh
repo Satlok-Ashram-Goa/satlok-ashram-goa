@@ -13,19 +13,16 @@ if [ -z "$APP_KEY" ]; then
     php artisan key:generate --force
 fi
 
-# Clear any stale cache
-php artisan optimize:clear
-
-# Run migrations
+# Run migrations FIRST (before any cache operations)
 php artisan migrate --force
 
-# Cache config and routes
+# Now cache config and routes
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
 # Optimize Filament
-php artisan filament:optimize
+php artisan filament:optimize || true
 
 # Start supervisor (manages nginx + php-fpm)
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
