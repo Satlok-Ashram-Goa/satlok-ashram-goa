@@ -47,8 +47,8 @@ COPY . .
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 storage bootstrap/cache
 
-# Generate autoloader and run scripts now that all files are present
-RUN composer dump-autoload --optimize
+# Generate autoloader without running scripts
+RUN composer dump-autoload --optimize --no-scripts
 
 # Install npm dependencies and build assets
 RUN npm ci && npm run build
